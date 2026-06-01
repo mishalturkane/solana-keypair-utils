@@ -1,244 +1,359 @@
-# 🔐 Solana Keypair Utils
+# 🔐 Solana Keypair Utils - CLI Tool
 
-A Rust utility tool for managing Solana keypairs with ease. Convert between formats, extract public keys, and generate vanity addresses with custom prefixes.
+A lightning-fast command-line tool for converting Solana keypairs between **Base58** and **JSON** formats instantly.
 
-## ✨ Features
-
-- **🔄 Base58 ↔ JSON Conversion**: Seamlessly convert between Base58 encoded private keys and JSON keypair arrays
-- **🔑 Public Key Extraction**: Extract and display public keys from keypairs in multiple formats
-- **💎 Vanity Address Generator**: Generate keypairs with custom address prefixes (e.g., addresses starting with "Sol")
-- **📦 Multiple Format Support**: Work with Base58, JSON, and raw byte representations
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Rust 1.70+
-- Cargo
-
-### Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/mishalturkane/solana-keypair-utils.git
-cd solana-keypair-utils
-```
-
-Build the project:
-
-```bash
-cargo build --release
-```
-
-## 🛠️ Usage
-
-### Setup Environment Variables
-
-Create a `.env` file in the project root:
-
-```bash
-# Your Base58 encoded Solana private key
-PRIVATE_KEY_BASE58=<your-base58-private-key>
-
-# Input/Output files
-INPUT_JSON_FILE=id.json
-VANITY_OUTPUT_FILE=vanity_keypair.json
-
-# Vanity address prefix to search for
-VANITY_PREFIX=Sol
-```
-
-### Run the Tool
-
-```bash
-cargo run --release
-```
-
-This will execute all three operations in sequence.
-
-## 📚 Operations
-
-### 1️⃣ Base58 → JSON Conversion
-
-Converts a Base58 encoded private key to a JSON keypair array format.
-
-**What it does:**
-- Decodes Base58 private key
-- Stores keypair as JSON array (64 bytes: 32 private + 32 public)
-- Saves to specified file
-
-**Output:**
-```json
-[193, 5, 74, 223, 97, 127, ...]
-```
-
-### 2️⃣ JSON → Base58 Conversion
-
-Converts a JSON keypair array back to Base58 format for easy sharing/storage.
-
-**What it does:**
-- Reads JSON keypair array
-- Encodes to Base58 format
-- Prints the Base58 private key
-
-**Output:**
-```
-🔑 Base58 Private Key: 5KL9q...
-```
-
-### 3️⃣ Vanity Address Search
-
-Generates keypairs until it finds one with a custom address prefix.
-
-**What it does:**
-- Generates random Ed25519 keypairs
-- Checks if the public key (Base58 encoded) starts with your prefix
-- Saves the matching keypair to a JSON file
-- Shows attempt count
-
-**Example:**
-```
-🔍 searching the address which starts from 'Sol'....
-⏳ 100000 attempts...
-⏳ 200000 attempts...
-✅ got it! in 523421 attempts
-📬 Address: SolXyz123...
-💾 vanity_keypair.json saved!
-```
-
-## 🔒 Security Considerations
-
-- **Never commit `.env` files** with real private keys to version control
-- **Keep private keys offline** when not in use
-- **Use devnet keys** for testing and development
-- **Validate addresses** before transferring funds
-- All operations are local - no keys are sent to external servers
-
-## 📦 Dependencies
-
-```toml
-bs58 = "0.5"              # Base58 encoding/decoding
-serde_json = "1.0"        # JSON serialization
-ed25519-dalek = "2.0"     # Ed25519 signature algorithm
-rand = "0.8"              # Cryptographically secure randomness
-dotenv = "0.15"           # Environment variable management
-```
-
-## 🎯 Common Use Cases
-
-### Generate a Devnet Keypair with Custom Prefix
-
-```bash
-# Set VANITY_PREFIX=dev in .env
-cargo run --release
-# Wait for the vanity generator to find a matching keypair
-```
-
-### Convert Your Phantom Wallet Export
-
-```bash
-# Export private key from Phantom
-# Set PRIVATE_KEY_BASE58 in .env
-cargo run --release
-# Your keypair will be saved as JSON
-```
-
-### Extract Public Address from Keypair
-
-```bash
-# Set INPUT_JSON_FILE to your keypair JSON
-cargo run --release
-# Check the output - the public address is printed
-```
-
-## 📊 Project Structure
-
-```
-solana-keypair-utils/
-├── src/
-│   ├── main.rs                          # Entry point
-│   └── keypair/
-│       ├── mod.rs                       # Module definitions
-│       ├── base58_to_json.rs           # Base58 → JSON conversion
-│       ├── json_to_base58.rs           # JSON → Base58 conversion
-│       └── search_key.rs               # Vanity address generator
-├── Cargo.toml                          # Project configuration
-├── .env.example                        # Environment template
-├── README.md                           # This file
-└── id.json                             # Example keypair JSON
-```
-
-## 💡 Examples
-
-### Example 1: Working with Your Solana CLI Keypair
-
-```bash
-# Your Solana keypair at ~/.config/solana/id.json is already in JSON format
-# Convert it to Base58 for backup:
-cp ~/.config/solana/id.json ./INPUT_JSON_FILE
-PRIVATE_KEY_BASE58="" cargo run --release
-```
-
-### Example 2: Generate Multiple Vanity Addresses
-
-Simply run the tool multiple times with different `VANITY_PREFIX` values:
-
-```bash
-# Search for "Sol" prefix
-VANITY_PREFIX=Sol cargo run --release
-
-# Search for "dev" prefix
-VANITY_PREFIX=dev cargo run --release
-```
-
-### Example 3: Batch Conversion
-
-Store your private keys in Base58 format and convert them all to JSON:
-
-```bash
-# Update .env with each Base58 key and run
-cargo run --release
-```
-
-## ⚡ Performance Notes
-
-- **Vanity address generation**: Average attempts = `58^n` where `n` is prefix length
-  - 3-char prefix: ~200,000 attempts (seconds)
-  - 4-char prefix: ~12,000,000 attempts (minutes)
-  - 5-char prefix: ~700,000,000 attempts (hours+)
-
-## 🐛 Troubleshooting
-
-### "PRIVATE_KEY_BASE58 not found in .env"
-Make sure your `.env` file exists and contains all required variables.
-
-### "Invalid base58 private key"
-Check that your Base58 string is valid and not corrupted. Copy directly from your wallet export.
-
-### "Invalid JSON"
-Ensure your JSON file contains a valid array of numbers (0-255).
-
-### Vanity search taking too long
-Longer prefixes take exponentially longer. Try shorter prefixes or run with `--release` for optimized binary.
-
-## 📝 License
-
-MIT License - feel free to use this tool in your projects!
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to:
-- Report bugs
-- Suggest features
-- Submit pull requests
-
-## 📮 Support
-
-For issues and questions:
-- 🐛 Open an issue on [GitHub Issues](https://github.com/mishalturkane/solana-keypair-utils/issues)
-- 💬 Reach out with questions
+**Just run:** `find "your-key"` and get instant results! No configuration needed.
 
 ---
 
-**Made with ❤️ for the Solana ecosystem**
+## ⚡ Quick Start (30 seconds)
+
+### Install
+```bash
+cargo install solana-keypair-utils
+```
+
+### Use Instantly
+```bash
+# Convert Base58 to JSON
+find "4rq21juJsG3H5FtYAhBqB3Uxy6SsfHGt1m3jCyCVJho7VyEGkkaYnuM1Z4dPp8rWKR7h5CHH1WJ46d1wmLByPnZM"
+
+# Convert JSON to Base58
+find '[193,5,74,223,97,127,237,64,104,28,158,222,16,135,78,160,193,161,210,241,96,194,75,112,169,141,3,233,179,164,60,209,160,145,187,56,143,179,52,181,76,101,202,86,185,49,139,174,201,26,151,97,103,175,123,107,219,17,208,227,168,34,204,152]'
+```
+
+**Done!** No project setup. No configuration. Just instant results. 🚀
+
+---
+
+## 🎯 What It Does
+
+The `find` command is a **smart keypair converter** that:
+
+✨ **Auto-Detects Format**
+- Automatically knows if input is Base58 or JSON
+- No flags needed
+- Just paste and go!
+
+🔐 **Shows Public Keys**
+- Extracts and displays public key automatically
+- Shows in Base58 format
+- Perfect for verification
+
+⚡ **Zero Configuration**
+- No `.env` files
+- No setup required
+- Works immediately
+
+🌍 **Works Everywhere**
+- Use from any terminal
+- Works on any machine
+- No Rust project needed
+
+---
+
+## 💡 Real-World Examples
+
+### Export from Phantom Wallet
+
+```bash
+# 1. Open Phantom → Settings → Copy Private Key
+# 2. Run in terminal
+find "paste-your-key-here"
+
+# Output:
+# ✅ Base58 → JSON
+# 📊 Bytes: 64
+# 📄 JSON:
+# [193,5,74,223,97,127,237,64,...]
+# 
+# 🔐 Public Key (Base58):
+# Boo7oAMZdTSUVMNa2VFEybxb2AiT3QRFQ7ofNjKjCFTd
+```
+
+### Backup Your Solana CLI Keypair
+
+```bash
+# Get your keypair
+cat ~/.config/solana/id.json
+
+# Convert to Base58 for backup
+find '[193,5,74,...]' > keypair_backup.txt
+
+# Store safely!
+```
+
+### Quick Format Check
+
+```bash
+# Need to know if a key is valid?
+find "some-key"
+
+# Instantly see if it's valid Base58 or JSON
+# Plus public key verification!
+```
+
+---
+
+## 🔧 Command Reference
+
+### Get Help
+```bash
+find
+```
+
+### Convert Base58 to JSON
+```bash
+find "YOUR_BASE58_KEY_HERE"
+```
+
+**Output shows:**
+- ✅ Direction (Base58 → JSON)
+- 📊 Total bytes
+- 📄 JSON array format
+- 🔐 Public key in Base58
+
+### Convert JSON to Base58
+```bash
+find '[193,5,74,223,97,127,...]'
+```
+
+**Output shows:**
+- ✅ Direction (JSON → Base58)
+- 🔑 Private key in Base58
+- 🔐 Public key in Base58
+
+---
+
+## 📋 Input/Output Examples
+
+### Example 1: Base58 Input
+```bash
+$ find "4rq21juJsG3H5FtYAhBqB3Uxy6SsfHGt1m3jCyCVJho7VyEGkkaYnuM1Z4dPp8rWKR7h5CHH1WJ46d1wmLByPnZM"
+
+✅ Base58 → JSON
+📊 Bytes: 64
+📄 JSON:
+[193,5,74,223,97,127,237,64,104,28,158,222,16,135,78,160,193,161,210,241,96,194,75,112,169,141,3,233,179,164,60,209,160,145,187,56,143,179,52,181,76,101,202,86,185,49,139,174,201,26,151,97,103,175,123,107,219,17,208,227,168,34,204,152]
+
+🔐 Public Key (Base58):
+Boo7oAMZdTSUVMNa2VFEybxb2AiT3QRFQ7ofNjKjCFTd
+```
+
+### Example 2: JSON Input
+```bash
+$ find '[193,5,74,223,97,127,237,64,104,28,158,222,16,135,78,160,193,161,210,241,96,194,75,112,169,141,3,233,179,164,60,209,160,145,187,56,143,179,52,181,76,101,202,86,185,49,139,174,201,26,151,97,103,175,123,107,219,17,208,227,168,34,204,152]'
+
+✅ JSON → Base58
+🔑 Private Key (Base58):
+4rq21juJsG3H5FtYAhBqB3Uxy6SsfHGt1m3jCyCVJho7VyEGkkaYnuM1Z4dPp8rWKR7h5CHH1WJ46d1wmLByPnZM
+
+🔐 Public Key (Base58):
+Boo7oAMZdTSUVMNa2VFEybxb2AiT3QRFQ7ofNjKjCFTd
+```
+
+---
+
+## 🎯 Use Cases
+
+### For Solana Users
+- Export wallet keys
+- Backup keypairs
+- Verify public addresses
+- Convert between formats quickly
+
+### For Developers
+- Quick keypair validation
+- Format conversion in scripts
+- Extract public keys instantly
+- Backup management
+
+### For DevOps
+- Integrate in automation scripts
+- Batch convert keypairs
+- Validate keypair files
+- Export in different formats
+
+---
+
+## 🔐 Security Notes
+
+✅ **All local** - No network calls
+✅ **No storage** - Doesn't save anything
+✅ **Instant** - Processes in milliseconds
+✅ **Safe** - Open source, fully auditable
+✅ **Private** - Your keys stay on your machine
+
+---
+
+## 🆘 Troubleshooting
+
+### "find: command not found"
+```bash
+cargo install solana-keypair-utils
+```
+
+### "Invalid base58 private key"
+- Check key has no spaces
+- Use 88-character keys
+- Copy directly from wallet
+- Don't modify the key
+
+### "Invalid JSON format"
+Use proper JSON array format:
+```bash
+✅ Correct:   find '[193,5,74,...]'
+❌ Wrong:     find '193,5,74,...'
+❌ Wrong:     find '{193,5,74}'
+```
+
+### "Invalid keypair length"
+Keypair must be 64 bytes (32 private + 32 public)
+- Check you have complete keypair
+- Not partial key
+
+---
+
+## 💻 Installation Options
+
+### Option 1: From crates.io (Recommended)
+```bash
+cargo install solana-keypair-utils
+```
+
+### Option 2: From GitHub
+```bash
+cargo install --git https://github.com/mishalturkane/solana-keypair-utils.git
+```
+
+### Option 3: From Source
+```bash
+git clone https://github.com/mishalturkane/solana-keypair-utils.git
+cd solana-keypair-utils
+cargo install --path .
+```
+
+---
+
+## 📚 Also Included: Rust Library
+
+If you're a Rust developer, you can also use this as a library:
+
+```bash
+cargo add solana-keypair-utils
+```
+
+```rust
+use solana_keypair_utils::base58_to_bytes;
+
+fn main() -> Result<(), String> {
+    let bytes = base58_to_bytes("your-key")?;
+    println!("Bytes: {:?}", bytes);
+    Ok(())
+}
+```
+
+See **HOW_TO_USE.md** for library details.
+
+---
+
+## 🚀 Why Use This?
+
+### ⚡ **Instant**
+- Single command
+- No setup
+- Immediate results
+- Millisecond conversion
+
+### 🎯 **Smart**
+- Auto-detects format
+- Shows public key
+- Validates input
+- Clear error messages
+
+### 🔒 **Secure**
+- Local processing only
+- No network calls
+- Open source
+- Fully auditable
+
+### 📦 **Reliable**
+- Battle-tested
+- MIT licensed
+- Well documented
+- Active maintenance
+
+---
+
+## 📖 Full Documentation
+
+| Document | Purpose |
+|----------|---------|
+| **README.md** | This page - CLI tool guide |
+| **HOW_TO_USE.md** | Complete usage guide |
+| **CHANGELOG.md** | What's new |
+| **PUBLISH_GUIDE.md** | Publishing updates |
+
+---
+
+## 🤝 Contributing
+
+Found a bug? Have a suggestion?
+
+- 🐛 **Report issues**: https://github.com/mishalturkane/solana-keypair-utils/issues
+- 💡 **Suggest features**: Open an issue
+- 🔧 **Submit PRs**: Pull requests welcome!
+
+---
+
+## 📋 Version Info
+
+- **Version**: 0.2.0
+- **License**: MIT
+- **Repository**: https://github.com/mishalturkane/solana-keypair-utils
+- **Crates.io**: https://crates.io/crates/solana-keypair-utils
+
+---
+
+## ✨ Features
+
+✅ Base58 ↔ JSON conversion
+✅ Auto-format detection
+✅ Public key extraction
+✅ Zero configuration
+✅ Works everywhere
+✅ Lightning fast
+✅ MIT licensed
+✅ Open source
+✅ Well documented
+
+---
+
+## 🎊 Get Started Now!
+
+```bash
+# Install (one-time)
+cargo install solana-keypair-utils
+
+# Use (anytime, anywhere)
+find "your-base58-key"
+
+# That's it! 🚀
+```
+
+**No project setup. No configuration. Just instant keypair conversion!**
+
+---
+
+## 📞 Quick Links
+
+- 🌐 **GitHub**: https://github.com/mishalturkane/solana-keypair-utils
+- 📦 **Crates.io**: https://crates.io/crates/solana-keypair-utils
+- 📖 **Docs**: https://docs.rs/solana-keypair-utils
+- 💬 **Issues**: https://github.com/mishalturkane/solana-keypair-utils/issues
+
+---
+
+**Made for Solana users, developers, and DevOps engineers.** 🔐
+
+**Questions?** Check **HOW_TO_USE.md** for detailed examples and troubleshooting.
