@@ -1,11 +1,14 @@
-use std::fs;
 use ed25519_dalek::SigningKey;
 use rand::rngs::OsRng;
+use std::fs;
 
 pub fn search_key(prefix: &str, filename: &str) {
     let mut count = 0;
 
-    println!("🔍 searching the address which starts from '{}'....", prefix);
+    println!(
+        "🔍 searching the address which starts from '{}'....",
+        prefix
+    );
 
     loop {
         let signing_key = SigningKey::generate(&mut OsRng);
@@ -26,11 +29,10 @@ pub fn search_key(prefix: &str, filename: &str) {
             keypair_bytes[..32].copy_from_slice(signing_key.as_bytes());
             keypair_bytes[32..].copy_from_slice(public_key.as_bytes());
 
-            let json = serde_json::to_string(&keypair_bytes.to_vec())
-                .expect("❌ JSON conversion failed!");
+            let json =
+                serde_json::to_string(&keypair_bytes.to_vec()).expect("❌ JSON conversion failed!");
 
-            fs::write(filename, &json)
-                .expect("❌ File write failed!");
+            fs::write(filename, &json).expect("❌ File write failed!");
 
             println!("💾 {} saved!", filename);
             break;

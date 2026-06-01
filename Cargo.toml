@@ -1,7 +1,23 @@
 [package]
 name = "solana-keypair-utils"
-version = "0.1.0"
-edition = "2024"
+version = "0.2.0"
+edition = "2021"
+authors = ["Mishal Turkane <mishal@example.com>"]
+description = "A Rust utility for managing Solana keypairs with Base58 ↔ JSON conversion and vanity address generation"
+repository = "https://github.com/mishalturkane/solana-keypair-utils"
+homepage = "https://github.com/mishalturkane/solana-keypair-utils"
+license = "MIT"
+keywords = ["solana", "keypair", "base58", "crypto", "web3"]
+categories = ["command-line-utilities", "cryptography"]
+default-run = "solana-keypair-utils"
+
+[[bin]]
+name = "find"
+path = "src/bin/find.rs"
+
+[lib]
+name = "solana_keypair_utils"
+path = "src/lib.rs"
 
 [dependencies]
 bs58 = "0.5"
@@ -9,3 +25,5 @@ serde_json = "1.0"
 ed25519-dalek = { version = "2.0", features = ["rand_core"] }
 rand = "0.8"
 dotenv = "0.15"
+
+[dev-dependencies]
